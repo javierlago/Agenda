@@ -1,6 +1,6 @@
 {
-    "name": "Agenda",
-    "description": "Agenda project whith PHP POO",
+    "name": "javierlago/agenda-poo",
+    "description": "Agenda project with PHP POO",
     "type": "project",
     "require": {
         "php": ">=8.1",
@@ -14,7 +14,7 @@
     "authors": [
         {
             "name": "Javier Lago Amoedo",
-            "email": "Javier Lago Amoedo"
+            "email": "javierlagoamoedo@gmail.com"
         }
     ]
 }
