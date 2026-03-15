@@ -21,11 +21,11 @@ class User
     public function create(string $name, string $email, string $password): bool
     {
         if ($this->findByEmail($email)) {
-            return false; // El email ya está registrado
+            return false; // The email is already registered, return false to indicate failure
         }
         // Hash the password before storing it
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $sql = "INSERT INTO users (name, email, password) VALUES (:name, :email, :password)";
+        $sql = "INSERT INTO users (username, email, password) VALUES (:name, :email, :password)";
         try {
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
@@ -45,10 +45,13 @@ class User
         try {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':email' => $email]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error finding by Email: " . $e->getMessage());
-            return false;
+            $user = $stmt->fetch(PDO::FETCH_ASSOC); // Usamos FETCH_ASSOC para mayor claridad
+
+            // Si no hay nada, $user será false. Devolvemos explícitamente el resultado.
+            return $user ? $user : null;
+        } catch (\PDOException $e) {
+            error_log("Error en findByEmail: " . $e->getMessage());
+            return null;
         }
     }
 }
