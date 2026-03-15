@@ -1,0 +1,10 @@
+# Dependencias (se instalan con composer install)
+/vendor/
+
+# Configuración sensible (Contiene tus contraseñas de BD)
+.env
+
+# Archivos del sistema o IDE
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,20 @@
+{
+    "name": "Agenda",
+    "description": "Agenda project whith PHP POO",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Javier Lago Amoedo",
+            "email": "Javier Lago Amoedo"
+        }
+    ]
+}
