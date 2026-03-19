@@ -18,6 +18,8 @@ class AuthController
         $name = trim($data['name'] ?? '');
         $email = trim($data['email'] ?? '');
         $password = trim($data['password'] ?? '');
+        $password_confirm = trim($data['password_confirm'] ?? '');
+
         if (empty($name)) {
             $errors[] = "Name is required.";
         }
@@ -37,6 +39,9 @@ class AuthController
             return ['success' => true, 'message' => 'User registered successfully.'];
         } else {
             return ['success' => false, 'errors' => ['Failed to register user. Email may already be in use.']];
+        }
+        if ($password !== $password_confirm) {
+            $errors[] = "Passwords do not match.";
         }
     }
 
@@ -89,9 +94,14 @@ class AuthController
         // Droy the session cookie in the browser
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
             );
         }
         // Finally, destroy the session in the server
