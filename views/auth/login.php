@@ -1,66 +1,54 @@
-<!DOCTYPE html>
-<html lang="es">
+<?php include __DIR__ . '/../layout/header.php'; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Agenda Pro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+<style>
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .login-container {
-            max-width: 400px;
-            margin-top: 100px;
-        }
+    .card-login {
+        width: 100%;
+        max-width: 400px;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
+<div class="login-wrapper">
+    <div class="card card-login p-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Bienvenido</h2>
+            <p class="text-muted small">Introduce tus credenciales</p>
+        </div>
 
-        .btn-primary {
-            border-radius: 10px;
-            padding: 10px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container login-container">
-        <div class="card p-4">
-            <div class="text-center mb-4">
-                <h2 class="fw-bold">Bienvenido</h2>
-                <p class="text-muted">Introduce tus datos para entrar</p>
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger p-2 small text-center"><?php echo $error; ?></div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['registered'])): ?>
+            <div class="alert alert-success p-2 small text-center">
+                ¡Registro completado! Ya puedes iniciar sesión.
             </div>
-
-            <?php if (isset($error)): ?>
-                <div class="alert alert-danger p-2 small"><?php echo $error; ?></div>
-            <?php endif; ?>
-
-            <form action="index.php?action=login" method="POST">
-                <div class="mb-3">
-                    <label for="email" class="form-label small fw-bold">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="nombre@ejemplo.com" required>
-                </div>
-                <div class="mb-4">
-                    <label for="password" class="form-label small fw-bold">Contraseña</label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
-            </form>
-
-            <div class="text-center">
-                <p class="small">¿No tienes cuenta? <a href="index.php?action=register" class="text-decoration-none">Regístrate</a></p>
+        <?php endif; ?>
+        <form action="index.php?action=login" method="POST">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Email</label>
+                <input type="email" name="email" class="form-control" placeholder="usuario@ejemplo.com" required>
             </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold">Contraseña</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Entrar</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="small mb-0">¿No tienes cuenta? <a href="index.php?action=register" class="text-decoration-none fw-bold">Regístrate</a></p>
         </div>
     </div>
+</div>
 
-</body>
-
-</html>
+<?php include __DIR__ . '/../layout/footer.php'; ?>
