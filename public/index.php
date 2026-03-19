@@ -12,7 +12,7 @@ ini_set('display_errors', 1);
 
 // 2. Carga de dependencias y variables de entorno
 require_once __DIR__ . '/../vendor/autoload.php';
-
+// session_destroy(); // ¡CUIDADO! Esto cerrará la sesión cada vez que cargues la página. Solo úsalo para pruebas, no lo dejes en producción.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
