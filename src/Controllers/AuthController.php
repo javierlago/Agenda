@@ -21,7 +21,7 @@ class AuthController
      */
     public function register(): void
     {
-        // 1. Si el usuario ya está logueado, no debería estar aquí
+        // 1. Si el usuario ya estÃ¡ logueado, no deberÃ­a estar aquÃ­
         if (isset($_SESSION['user_id'])) {
             header("Location: index.php");
             exit;
@@ -29,7 +29,7 @@ class AuthController
 
         $errors = [];
 
-        // 2. ¿Se ha enviado el formulario? (POST)
+        // 2. Â¿Se ha enviado el formulario? (POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Recogemos los datos directamente de $_POST
             $name = trim($_POST['name'] ?? '');
@@ -44,13 +44,13 @@ class AuthController
             if (empty($email)) {
                 $errors[] = "El email es obligatorio.";
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = "Formato de email inválido.";
+                $errors[] = "Formato de email invÃ¡lido.";
             }
             if (strlen($password) < 6) {
-                $errors[] = "La contraseña debe tener al menos 6 caracteres.";
+                $errors[] = "La contraseÃ±a debe tener al menos 6 caracteres.";
             }
             if ($password !== $password_confirm) {
-                $errors[] = "Las contraseñas no coinciden.";
+                $errors[] = "Las contraseÃ±as no coinciden.";
             }
 
             if (empty($errors)) {
@@ -60,7 +60,7 @@ class AuthController
                     header("Location: index.php?action=login&registered=1");
                     exit;
                 } else {
-                    $errors[] = "Error al registrar. El email podría estar ya en uso.";
+                    $errors[] = "Error al registrar. El email podrÃ­a estar ya en uso.";
                 }
             }
         }   
@@ -76,17 +76,17 @@ class AuthController
     {
         $error = null;
 
-        // Si es POST, el usuario envió el formulario
+        // Si es POST, el usuario enviÃ³ el formulario
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            // 1. Buscamos al usuario directamente aquí
+            // 1. Buscamos al usuario directamente aquÃ­
             $stmt = $this->db->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
             $stmt->execute(['email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // 2. Verificamos la contraseña
+            // 2. Verificamos la contraseÃ±a
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['name'];
@@ -98,7 +98,7 @@ class AuthController
             }
         }
 
-        // 3. Cargamos la vista (esta variable $error se usará en el HTML)
+        // 3. Cargamos la vista (esta variable $error se usarÃ¡ en el HTML)
         require_once __DIR__ . '/../../views/auth/login.php';
     }
     public function logout(): void

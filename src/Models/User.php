@@ -47,7 +47,7 @@ class User
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC); // Usamos FETCH_ASSOC para mayor claridad
 
-            // Si no hay nada, $user será false. Devolvemos explícitamente el resultado.
+            // Si no hay nada, $user serÃ¡ false. Devolvemos explÃ­citamente el resultado.
             return $user ? $user : null;
         } catch (\PDOException $e) {
             error_log("Error en findByEmail: " . $e->getMessage());

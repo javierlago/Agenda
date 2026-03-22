@@ -107,11 +107,73 @@ class ContactController
 
     /**
      * Handles the deletion of a contact.
-     * * @param int $id Contact ID.
-     * @return bool
+     * No recibe parámetros por firma para ser compatible con el Router.
      */
-    public function destroy(int $id): bool
+    public function destroy(): void
     {
-        return $this->contactModel->delete($id, (int)$_SESSION['user_id']);
+        // 1. Extraemos el ID de la URL
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?action=home");
+            exit;
+        }
+
+        // 2. Verificamos que el contacto existe y pertenece al usuario (Seguridad)
+        // Usamos el método show que ya tienes
+        $contact = $this->show((int)$id);
+
+        if (!$contact) {
+            header("Location: index.php?action=home&error=notfound");
+            exit;
+        }
+
+        // 3. Ejecutamos el borrado en el modelo
+        // Importante: No retornamos nada, ejecutamos y redirigimos
+        $result = $this->contactModel->delete((int)$id, (int)$_SESSION['user_id']);
+
+        if ($result) {
+            // ÉXITO: Volvemos al home con aviso de borrado
+            header("Location: index.php?action=home&success=deleted");
+        } else {
+            // ERROR: Volvemos al home avisando que algo falló
+            header("Location: index.php?action=home&error=deletefailed");
+        }
+
+        exit;
+    }
+    public function edit(): void
+    {
+
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?action=home");
+            exit;
+        }
+
+        $contact = $this->show((int)$id);
+
+        if (!$contact) {
+            header("Location: index.php?action=home&error=notfound");
+            exit;
+        }
+
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $_POST;
+            $data['user_id'] = $_SESSION['user_id'];
+
+            // Llamamos a tu método de actualización
+            if ($this->update((int)$id, $data)['success']) {
+                header("Location: index.php?action=home&success=updated");
+                exit;
+            } else {
+                $error = "No se pudo actualizar el contacto.";
+            }
+        }
+
+        require_once __DIR__ . '/../../views/contacts/edit.php';
     }
 }
