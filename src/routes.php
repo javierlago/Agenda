@@ -7,9 +7,10 @@
 return [
     // Auth
     'login'          => ['AuthController', 'login', false],
-    'register'       => ['AuthController', 'register', false],
     'logout'         => ['AuthController', 'logout', true],
-    
+    // Rutas de Entidad Usuario (UserController)
+    'register' => ['UserController', 'register', false],
+    'profile'  => ['UserController', 'profile', true],
     // Contacts
     'home'           => ['ContactController', 'index', true],
     'add_contact'    => ['ContactController', 'create', true],

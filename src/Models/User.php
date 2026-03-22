@@ -18,27 +18,31 @@ class User
         $this->db = Database::getConnection();
     }
 
-    public function create(string $name, string $email, string $password): bool
-    {
-        if ($this->findByEmail($email)) {
-            return false; // The email is already registered, return false to indicate failure
+public function create(string $name, string $email, string $password): bool
+{
+    try {
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+        return $stmt->execute([$name, $email, $hash]);
+    } catch (\PDOException $e) {
+        if ($e->getCode() == 23000) {
+            // Analizamos el mensaje de error de MySQL para saber qué campo falló
+            $errorInfo = $e->getMessage();
+            
+            if (str_contains($errorInfo, 'email')) {
+                throw new \Exception("Este correo electrónico ya está registrado.");
+            }
+            
+            if (str_contains($errorInfo, 'name') || str_contains($errorInfo, 'username')) {
+                throw new \Exception("El nombre de usuario ya está en uso. Elige otro.");
+            }
+
+            throw new \Exception("Ya existe un registro con estos datos.");
         }
-        // Hash the password before storing it
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $sql = "INSERT INTO users (username, email, password) VALUES (:name, :email, :password)";
-        try {
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':password' => $hashedPassword
-            ]);
-        } catch (PDOException $e) {
-            // Handle any exceptions that occur during the database operation
-            error_log("Error creatin a user: " . $e->getMessage());
-            return false;
-        }
+        
+        throw new \Exception("Error técnico: " . $e->getMessage());
     }
+}
     public function findByEmail(string $email)
     {
         $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
@@ -53,5 +57,18 @@ class User
             error_log("Error en findByEmail: " . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Obtiene un usuario por su ID.
+     * @param int $id
+     * @return array|bool Retorna el array del usuario o false si no existe.
+     */
+    public function getById(int $id)
+    {
+        $stmt = $this->db->prepare("SELECT id, username, email, created_at FROM users WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

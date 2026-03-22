@@ -16,58 +16,6 @@ class AuthController
         $this->db = Database::getConnection();
     }
     /**
-     * Method to handle the display of the registration form and process registration submissions.
-     * 
-     */
-    public function register(): void
-    {
-        // 1. Si el usuario ya está logueado, no debería estar aquí
-        if (isset($_SESSION['user_id'])) {
-            header("Location: index.php");
-            exit;
-        }
-
-        $errors = [];
-
-        // 2. ¿Se ha enviado el formulario? (POST)
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Recogemos los datos directamente de $_POST
-            $name = trim($_POST['name'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $password = $_POST['password'] ?? '';
-            $password_confirm = $_POST['password_confirm'] ?? '';
-
-            // --- VALIDACIONES ---
-            if (empty($name)) {
-                $errors[] = "El nombre es obligatorio.";
-            }
-            if (empty($email)) {
-                $errors[] = "El email es obligatorio.";
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = "Formato de email inválido.";
-            }
-            if (strlen($password) < 6) {
-                $errors[] = "La contraseña debe tener al menos 6 caracteres.";
-            }
-            if ($password !== $password_confirm) {
-                $errors[] = "Las contraseñas no coinciden.";
-            }
-
-            if (empty($errors)) {
-                $result = $this->userModel->create($name, $email, $password);
-
-                if ($result) {
-                    header("Location: index.php?action=login&registered=1");
-                    exit;
-                } else {
-                    $errors[] = "Error al registrar. El email podría estar ya en uso.";
-                }
-            }
-        }   
-        require_once __DIR__ . '/../../views/auth/register.php';
-    }
-
-    /**
      * 
      * 
      * Method to handle the display of the login form and process login submissions.
