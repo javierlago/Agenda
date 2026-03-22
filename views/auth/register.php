@@ -1,7 +1,7 @@
-<?php 
-    $pageTitle = "Crear Cuenta - Agenda Pro";
-    $hideNavbar = false; // Aquí sí queremos ver la barra superior
-    include __DIR__ . '/../layout/header.php'; 
+<?php
+$pageTitle = "Crear Cuenta - Agenda Pro";
+$hideNavbar = false; // Aquí sí queremos ver la barra superior
+include __DIR__ . '/../layout/header.php';
 ?>
 
 <style>
@@ -12,12 +12,13 @@
         justify-content: center;
         padding: 20px 0;
     }
+
     .card-register {
         width: 100%;
         max-width: 500px;
         border: none;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 </style>
 
@@ -28,8 +29,14 @@
             <p class="text-muted small">Regístrate para empezar a organizar tu agenda</p>
         </div>
 
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger p-2 small text-center"><?php echo $error; ?></div>
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= $error ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
         <?php endif; ?>
 
         <form action="index.php?action=register" method="POST">

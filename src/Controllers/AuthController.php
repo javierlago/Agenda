@@ -3,113 +3,108 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Database\Database;
+use PDO;
 
 class AuthController
 {
     private $userModel;
+    private PDO $db;
     public function __construct()
     {
         $this->userModel = new User();
+        $this->db = Database::getConnection();
     }
-    public function register(array $data)
+    /**
+     * Method to handle the display of the registration form and process registration submissions.
+     * 
+     */
+    public function register(): void
     {
+        // 1. Si el usuario ya está logueado, no debería estar aquí
+        if (isset($_SESSION['user_id'])) {
+            header("Location: index.php");
+            exit;
+        }
+
         $errors = [];
-        // Basic validation
-        $name = trim($data['name'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $password = trim($data['password'] ?? '');
-        $password_confirm = trim($data['password_confirm'] ?? '');
 
-        if (empty($name)) {
-            $errors[] = "Name is required.";
-        }
-        if (empty($email)) {
-            $errors[] = "Email is required.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = "Invalid email format.";
-        }
-        if (strlen($password) < 6) {
-            $errors[] = "Password must be at least 6 characters.";
-        }
-        if (!empty($errors)) {
-            return ['success' => false, 'errors' => $errors];
-        }
-        $result = $this->userModel->create($name, $email, $password);
-        if ($result) {
-            return ['success' => true, 'message' => 'User registered successfully.'];
-        } else {
-            return ['success' => false, 'errors' => ['Failed to register user. Email may already be in use.']];
-        }
-        if ($password !== $password_confirm) {
-            $errors[] = "Passwords do not match.";
-        }
-    }
+        // 2. ¿Se ha enviado el formulario? (POST)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Recogemos los datos directamente de $_POST
+            $name = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $password_confirm = $_POST['password_confirm'] ?? '';
 
-
-    public function login(array $data)
-    {
-        $email = trim($data['email'] ?? '');
-        $password = $data['password'] ?? '';
-
-        // 1. Validate input
-        if (empty($email) || empty($password)) {
-            return [
-                'success' => false,
-                'errors' => ["Email y contraseña son obligatorios."]
-            ];
-        }
-
-        // 2. Find user by email
-        $user = $this->userModel->findByEmail($email);
-
-        // 3. Verify password and start session
-        if ($user && password_verify($password, $user['password'])) {
-            // Iniciamos sesión (importante: session_start() suele ir en el index, 
-            // pero para esta prueba lo ponemos aquí si no ha iniciado)
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
+            // --- VALIDACIONES ---
+            if (empty($name)) {
+                $errors[] = "El nombre es obligatorio.";
+            }
+            if (empty($email)) {
+                $errors[] = "El email es obligatorio.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Formato de email inválido.";
+            }
+            if (strlen($password) < 6) {
+                $errors[] = "La contraseña debe tener al menos 6 caracteres.";
+            }
+            if ($password !== $password_confirm) {
+                $errors[] = "Las contraseñas no coinciden.";
             }
 
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['username'];
+            if (empty($errors)) {
+                $result = $this->userModel->create($name, $email, $password);
 
-            return [
-                'success' => true,
-                'message' => "Bienvenido de nuevo, " . $user['username']
-            ];
-        }
-
-        return [
-            'success' => false,
-            'errors' => ["Credenciales incorrectas."]
-        ];
+                if ($result) {
+                    header("Location: index.php?action=login&registered=1");
+                    exit;
+                } else {
+                    $errors[] = "Error al registrar. El email podría estar ya en uso.";
+                }
+            }
+        }   
+        require_once __DIR__ . '/../../views/auth/register.php';
     }
-    public function logout()
+
+    /**
+     * 
+     * 
+     * Method to handle the display of the login form and process login submissions.
+     */
+    public function login(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        $error = null;
+
+        // Si es POST, el usuario envió el formulario
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = $_POST['email'] ?? '';
+            $password = $_POST['password'] ?? '';
+
+            // 1. Buscamos al usuario directamente aquí
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // 2. Verificamos la contraseña
+            if ($user && password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['name'];
+
+                header("Location: index.php?action=home");
+                exit;
+            } else {
+                $error = "Credenciales incorrectas.";
+            }
         }
-        // Emppty the session array
-        $_SESSION = [];
-        // Droy the session cookie in the browser
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params["path"],
-                $params["domain"],
-                $params["secure"],
-                $params["httponly"]
-            );
-        }
-        // Finally, destroy the session in the server
+
+        // 3. Cargamos la vista (esta variable $error se usará en el HTML)
+        require_once __DIR__ . '/../../views/auth/login.php';
+    }
+    public function logout(): void
+    {
         session_destroy();
-        // Return a response or redirect as needed
-        return [
-            'success' => true,
-            'message' => "Sesión cerrada correctamente."
-        ];
+        header("Location: index.php?action=login");
+        exit;
     }
 }

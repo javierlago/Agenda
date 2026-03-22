@@ -20,26 +20,21 @@ class ContactController
     }
 
     /**
-     * Fetches all contacts for the current user.
-     * Provides a fallback example if no contacts exist.
-     * * @return array
+     * 
+     * Displays the list of contacts for the logged-in user.
+     * If there are no contacts, it can show an example contact.
      */
-    public function index(): array
+    public function index(): void
     {
         $contacts = $this->contactModel->getAllByUserId((int)$_SESSION['user_id']);
 
+        // Si no hay contactos, el array de ejemplo lo manejamos aquí si queremos
         if (empty($contacts)) {
-            $contacts = [
-                [
-                    'name' => 'User Example Example',
-                    'phone' => '999999999',
-                    'email' => 'userexample@gmail.com',
-                    'description' => 'This is an example contact',
-                    'is_example' => true
-                ]
-            ];
+            $contacts = [['name' => 'Ejemplo', 'phone' => '000', 'email' => 'a@b.com', 'is_example' => true]];
         }
-        return $contacts;
+
+        // El controlador carga la vista
+        require_once __DIR__ . '/../../views/contacts/index.php';
     }
 
     /**
@@ -56,11 +51,34 @@ class ContactController
         $data['user_id'] = $_SESSION['user_id'];
         $success = $this->contactModel->create($data);
 
-        return $success 
-            ? ['success' => true] 
+        return $success
+            ? ['success' => true]
             : ['success' => false, 'errors' => ['Error saving the contact.']];
     }
+    /**
+     * Method to handle the display of the contact creation form.
+     * 
+     * 
+     */
+    public function create(): void
+    {
+        $error = null;
 
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $_POST;
+            $data['user_id'] = $_SESSION['user_id'];
+
+            if ($this->contactModel->create($data)) {
+                header("Location: index.php?action=home&success=1");
+                exit;
+            } else {
+                $error = "No se pudo guardar el contacto.";
+            }
+        }
+
+        // Cargamos la vista de creación
+        require_once __DIR__ . '/../../views/contacts/create.php';
+    }
     /**
      * Fetches a single contact for editing.
      * @param int $id Contact ID.
@@ -82,8 +100,8 @@ class ContactController
         $data['user_id'] = $_SESSION['user_id'];
         $success = $this->contactModel->update($id, $data);
 
-        return $success 
-            ? ['success' => true] 
+        return $success
+            ? ['success' => true]
             : ['success' => false, 'errors' => ['Error updating the contact.']];
     }
 
