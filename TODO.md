@@ -7,29 +7,29 @@ This document tracks the architectural progress and feature set of the Agenda (C
 ## 🏗️ 1. Foundation & Security (Core)
 | Task | Status | Priority | Notes |
 | :--- | :---: | :---: | :--- |
-| Full Authentication (Login/Logout/Register) | [ ] | High | System gatekeeper. |
-| Route Protection (AuthHelper/Middleware) | [ ] | High | Prevent direct access to private actions. |
-| Password Hashing (`password_hash`) | [ ] | Critical | Secure handling of sensitive credentials. |
-| SQL Injection Prevention (PDO Prepared) | [ ] | Critical | Database shielding. |
-| XSS Prevention (`htmlspecialchars`) | [ ] | High | Data sanitization before HTML rendering. |
+| Full Authentication (Login/Logout/Register) | ✅ | High | System gatekeeper. |
+| Route Protection (AuthHelper/Middleware) | ✅  | High | Prevent direct access to private actions. |
+| Password Hashing (`password_hash`) | ✅ | Critical | Secure handling of sensitive credentials. |
+| SQL Injection Prevention (PDO Prepared) | ✅ | Critical | Database shielding. |
+| XSS Prevention (`htmlspecialchars`) | ✅ | High | Data sanitization before HTML rendering. |
 
 ---
 
 ## 👤 2. User Management (UserController)
 | Task | Status | Priority | Notes |
 | :--- | :---: | :---: | :--- |
-| User Profile View (`getById`) | [ ] | Medium | Display logged-in user data. |
-| Profile Editing (Update Name/Email) | [ ] | Medium | Allow users to modify their account info. |
-| Robust Duplicate Validation | [ ] | High | Specific error handling for Email vs Username. |
-| Logging System (`Utils\Logger`) | [ ] | Medium | Error and access traceability in `/Logs`. |
+| User Profile View (`getById`) | ✅ | Medium | Display logged-in user data. |
+| Profile Editing (Update Name/Email) | ✅ | Medium | Allow users to modify their account info. |
+| Robust Duplicate Validation | ✅ | High | Specific error handling for Email vs Username. |
+| Logging System (`Utils\Logger`) | ✅ | Medium | Error and access traceability in `/Logs`. |
 
 ---
 
 ## 📇 3. Contact Management (ContactController)
 | Task | Status | Priority | Notes |
 | :--- | :---: | :---: | :--- |
-| Contact CRUD (Create, Read, Update, Delete) | [ ] | High | Core application functionality. |
-| Data Ownership Filter (`user_id`) | [ ] | Critical | Users MUST NOT see/edit others' contacts. |
+| Contact CRUD (Create, Read, Update, Delete) | ✅ | High | Core application functionality. |
+| Data Ownership Filter (`user_id`) | ✅ | Critical | Users MUST NOT see/edit others' contacts. |
 | Result Pagination | [ ] | Medium | Efficiently handle large datasets (50+ records). |
 | Search Functionality | [ ] | Low | Filter contacts by name or email. |
 
@@ -38,10 +38,10 @@ This document tracks the architectural progress and feature set of the Agenda (C
 ## 🛠️ 4. Architecture & Clean Code
 | Task | Status | Priority | Notes |
 | :--- | :---: | :---: | :--- |
-| PSR-4 Autoloading (Composer) | [ ] | High | Standardized class loading (no manual requires). |
-| Front Controller (Router index.php) | [ ] | High | Single entry point pattern. |
-| Strict MVC Separation | [ ] | High | Model (SQL), View (HTML), Controller (Logic). |
-| Global Exception Handling | [ ] | Medium | Structured `try-catch` blocks between layers. |
+| PSR-4 Autoloading (Composer) | ✅ | High | Standardized class loading (no manual requires). |
+| Front Controller (Router index.php) | ✅ | High | Single entry point pattern. |
+| Strict MVC Separation | ✅ | High | Model (SQL), View (HTML), Controller (Logic). |
+| Global Exception Handling | ✅ | Medium | Structured `try-catch` blocks between layers. |
 
 ---
 
