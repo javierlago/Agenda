@@ -70,5 +70,6 @@ public function create(string $name, string $email, string $password): bool
         $stmt->execute(['id' => $id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+        // Esto es un comentario
     }
 }
