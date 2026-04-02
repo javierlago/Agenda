@@ -91,7 +91,6 @@ class User
             throw new \Exception("No hay datos para actualizar.");
         }
         $sql = "UPDATE users SET " . implode(", ", $fields) . " WHERE id = :id";
-        Logger::log('user_updates', "sql: $sql, params: " . json_encode($params));
 
         try {
             $stmt = $this->db->prepare($sql);
