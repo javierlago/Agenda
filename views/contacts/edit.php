@@ -36,5 +36,6 @@
         <a href="index.php?action=home" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+// Footer
 
 <?php include __DIR__ . '/../layout/footer.php'; ?>
