@@ -44,11 +44,11 @@ class Contact
             return false;
         }
     }
-    public function  findById(int $id): ?array
+    public function findById(int $id, int $userId): ?array
     {
         $sql = "SELECT * FROM contacts WHERE id = :id AND user_id = :user_id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([':id' => $id, ':user_id' => $_SESSION['user_id']]);
+        $stmt->execute([':id' => $id, ':user_id' => $userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
     /**
@@ -60,7 +60,7 @@ class Contact
      */
     public function update(int $id, array $data): bool
     {
-        $sql = "UPDATE contacts SET name = :name, phone = :phone, email = :email, description = :description 
+        $sql = "UPDATE contacts SET name = :name, phone = :phone, email = :email, description = :description
                 WHERE id = :id AND user_id = :user_id";
         try {
             $stmt = $this->db->prepare($sql);
