@@ -1,7 +1,3 @@
-<?php 
-    $pageTitle = "Mis Contactos";
-    include __DIR__ . '/../layout/header.php'; 
-?>
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,7 +7,16 @@
 
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-body">
-            <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o teléfono...">
+            <form method="GET" action="index.php" class="d-flex gap-2">
+                <input type="hidden" name="action" value="home">
+                <input type="text" name="search" class="form-control"
+                    placeholder="Buscar por nombre, teléfono o email..."
+                    value="<?= htmlspecialchars($search) ?>">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <?php if ($search !== ''): ?>
+                    <a href="index.php?action=home" class="btn btn-outline-secondary">Limpiar</a>
+                <?php endif; ?>
+            </form>
         </div>
     </div>
 
@@ -40,7 +45,7 @@
                             <p class="card-text mb-1 small">
                                 <strong>Email:</strong> <?php echo htmlspecialchars($contact['email'] ?? 'N/A'); ?>
                             </p>
-                            
+
                             <?php if (!empty($contact['description'])): ?>
                                 <p class="card-text small text-truncate" title="<?php echo htmlspecialchars($contact['description']); ?>">
                                     <strong>Nota:</strong> <?php echo htmlspecialchars($contact['description']); ?>
@@ -49,13 +54,13 @@
 
                             <?php if (!isset($contact['is_example'])): ?>
                                 <div class="d-flex justify-content-end gap-2 mt-3 pt-2 border-top">
-                                    <a href="index.php?action=edit_contact&id=<?php echo $contact['id']; ?>" 
-                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <a href="index.php?action=edit_contact&id=<?php echo $contact['id']; ?>"
+                                        class="btn btn-sm btn-outline-primary" title="Editar">
                                         Editar
                                     </a>
-                                    <a href="index.php?action=delete_contact&id=<?php echo $contact['id']; ?>" 
-                                       class="btn btn-sm btn-outline-danger" 
-                                       onclick="return confirm('¿Estás seguro de que quieres eliminar a este contacto?');" title="Eliminar">
+                                    <a href="index.php?action=delete_contact&id=<?php echo $contact['id']; ?>"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('¿Estás seguro de que quieres eliminar a este contacto?');" title="Eliminar">
                                         Eliminar
                                     </a>
                                 </div>
@@ -64,6 +69,25 @@
                     </div>
                 </div>
             <?php endforeach; ?>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="index.php?action=home&page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>">Previous</a>
+                    </li>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
+                            <a class="page-link" href="index.php?action=home&page=<?= $i ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="index.php?action=home&page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>">Next</a>
+                    </li>
+
+                </ul>
+            </nav>
         <?php else: ?>
             <div class="col-12 text-center py-5">
                 <p class="text-muted">No se encontraron contactos.</p>
@@ -72,4 +96,3 @@
     </div>
 </div>
 
-<?php include __DIR__ . '/../layout/footer.php'; ?>

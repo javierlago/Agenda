@@ -105,4 +105,64 @@ class Contact
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':id' => $id, ':user_id' => $userId]);
     }
+    /**
+     *  Pagination method to retrieve a subset of contacts for a user.
+     * @param int $userId The ID of the logged-in user.
+     * @param int $limit Number of contacts per page.
+     * @param int $offset Number of contacts to skip (for pagination).
+     */
+
+    public function getPaginated(int $userId, int $limit, int $offset, string $search = ''): array
+    {
+        if ($search !== '') {
+            $stmt = $this->db->prepare("
+                SELECT * FROM contacts
+                WHERE user_id = ?
+                AND (name LIKE ? OR phone LIKE ? OR email LIKE ?)
+                ORDER BY name ASC
+                LIMIT ? OFFSET ?
+            ");
+            $term = '%' . $search . '%';
+            $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+            $stmt->bindValue(2, $term);
+            $stmt->bindValue(3, $term);
+            $stmt->bindValue(4, $term);
+            $stmt->bindValue(5, $limit, \PDO::PARAM_INT);
+            $stmt->bindValue(6, $offset, \PDO::PARAM_INT);
+        } else {
+            $stmt = $this->db->prepare("
+                SELECT * FROM contacts
+                WHERE user_id = ?
+                ORDER BY name ASC
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+            $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, \PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    /**
+     * Obtiene el total de contactos para un usuario específico (útil para paginación).
+     * @param int $userId
+     * @return int
+     */
+    public function getTotalCount(int $userId, string $search = ''): int
+    {
+        if ($search !== '') {
+            $stmt = $this->db->prepare("
+                SELECT COUNT(*) FROM contacts
+                WHERE user_id = ?
+                AND (name LIKE ? OR phone LIKE ? OR email LIKE ?)
+            ");
+            $term = '%' . $search . '%';
+            $stmt->execute([$userId, $term, $term, $term]);
+        } else {
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM contacts WHERE user_id = ?");
+            $stmt->execute([$userId]);
+        }
+        return (int) $stmt->fetchColumn();
+    }
 }
