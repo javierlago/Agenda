@@ -1,11 +1,11 @@
 
 <div class="container mt-5">
     <h2>Editar Contacto</h2>
-    <hr">
+    <hr>
 
-    <?php if (!empty($errors)): ?>
+    <?php if (!empty($error)): ?>
         <div class="alert alert-danger">
-            <?php foreach ($errors as $error): echo "<p>$error</p>"; endforeach; ?>
+            <?php foreach ($error as $e): echo "<p>$e</p>"; endforeach; ?>
         </div>
     <?php endif; ?>
 
@@ -26,6 +26,11 @@
             <label for="email" class="form-label">Email</label>
             <input type="email" name="email" id="email" class="form-control"
                    value="<?= htmlspecialchars($_POST['email'] ?? $contact['email'] ?? '') ?>">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Descripción</label>
+            <textarea name="description" id="description" class="form-control"><?= htmlspecialchars($_POST['description'] ?? $contact['description'] ?? '') ?></textarea>   
+
         </div>
 
         <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
