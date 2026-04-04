@@ -7,14 +7,20 @@
 
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-body">
-            <form method="GET" action="index.php" class="d-flex gap-2">
+            <form method="GET" action="index.php" class="d-flex gap-2 flex-wrap">
                 <input type="hidden" name="action" value="home">
                 <input type="text" name="search" class="form-control"
                     placeholder="Buscar por nombre, teléfono o email..."
                     value="<?= htmlspecialchars($search) ?>">
+                <select name="sort" class="form-select" style="max-width: 200px;">
+                    <option value="name_asc"  <?= $sort === 'name_asc'  ? 'selected' : '' ?>>Nombre A-Z</option>
+                    <option value="name_desc" <?= $sort === 'name_desc' ? 'selected' : '' ?>>Nombre Z-A</option>
+                    <option value="date_desc" <?= $sort === 'date_desc' ? 'selected' : '' ?>>Más recientes</option>
+                    <option value="date_asc"  <?= $sort === 'date_asc'  ? 'selected' : '' ?>>Más antiguos</option>
+                </select>
                 <button type="submit" class="btn btn-primary">Buscar</button>
                 <?php if ($search !== ''): ?>
-                    <a href="index.php?action=home" class="btn btn-outline-secondary">Limpiar</a>
+                    <a href="index.php?action=home&sort=<?= urlencode($sort) ?>" class="btn btn-outline-secondary">Limpiar</a>
                 <?php endif; ?>
             </form>
         </div>
@@ -22,6 +28,13 @@
 
     <div class="row" id="contactList">
         <?php if (!empty($contacts)): ?>
+            <?php
+                $from = $offset + 1;
+                $to   = min($offset + $limit, $totalContacts);
+            ?>
+            <div class="col-12 mb-3 text-muted small">
+                Mostrando <?= $from ?>-<?= $to ?> de <?= $totalContacts ?> contacto<?= $totalContacts !== 1 ? 's' : '' ?>
+            </div>
             <?php foreach ($contacts as $contact): ?>
                 <div class="col-md-4 mb-4 contact-item">
                     <div class="card h-100 shadow-sm border-0 position-relative">
@@ -73,17 +86,17 @@
                 <ul class="pagination justify-content-center">
 
                     <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="index.php?action=home&page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>">Previous</a>
+                        <a class="page-link" href="index.php?action=home&page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>">Anterior</a>
                     </li>
 
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
-                            <a class="page-link" href="index.php?action=home&page=<?= $i ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
+                            <a class="page-link" href="index.php?action=home&page=<?= $i ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>"><?= $i ?></a>
                         </li>
                     <?php endfor; ?>
 
                     <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="index.php?action=home&page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>">Next</a>
+                        <a class="page-link" href="index.php?action=home&page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>">Siguiente</a>
                     </li>
 
                 </ul>

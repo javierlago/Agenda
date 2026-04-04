@@ -112,14 +112,21 @@ class Contact
      * @param int $offset Number of contacts to skip (for pagination).
      */
 
-    public function getPaginated(int $userId, int $limit, int $offset, string $search = ''): array
+    public function getPaginated(int $userId, int $limit, int $offset, string $search = '', string $sort = 'name_asc'): array
     {
+        $orderBy = match($sort) {
+            'name_desc' => 'name DESC',
+            'date_asc'  => 'created_at ASC',
+            'date_desc' => 'created_at DESC',
+            default     => 'name ASC',
+        };
+
         if ($search !== '') {
             $stmt = $this->db->prepare("
                 SELECT * FROM contacts
                 WHERE user_id = ?
                 AND (name LIKE ? OR phone LIKE ? OR email LIKE ?)
-                ORDER BY name ASC
+                ORDER BY {$orderBy}
                 LIMIT ? OFFSET ?
             ");
             $term = '%' . $search . '%';
@@ -133,7 +140,7 @@ class Contact
             $stmt = $this->db->prepare("
                 SELECT * FROM contacts
                 WHERE user_id = ?
-                ORDER BY name ASC
+                ORDER BY {$orderBy}
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $userId, \PDO::PARAM_INT);

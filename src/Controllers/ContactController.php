@@ -186,26 +186,30 @@ class ContactController
         AuthHelper::verifyLogin();
         $userId = $_SESSION['user_id'];
 
-        // 1. Término de búsqueda (vacío si no se busca nada)
         $search = trim($_GET['search'] ?? '');
 
-        // 2. Configuración de paginación
+        $allowedSorts = ['name_asc', 'name_desc', 'date_asc', 'date_desc'];
+        $sort = in_array($_GET['sort'] ?? '', $allowedSorts) ? $_GET['sort'] : 'name_asc';
+
         $limit = 6;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
         $offset = ($page - 1) * $limit;
 
-        // 3. Obtener datos filtrando por búsqueda si existe
-        $contacts = $this->contactModel->getPaginated($userId, $limit, $offset, $search);
+        $contacts      = $this->contactModel->getPaginated($userId, $limit, $offset, $search, $sort);
         $totalContacts = $this->contactModel->getTotalCount($userId, $search);
-        $totalPages = ceil($totalContacts / $limit);
+        $totalPages    = (int) ceil($totalContacts / $limit);
 
         View::render('contacts/index', [
-            'pageTitle'  => 'Mis Contactos',
-            'contacts'   => $contacts,
-            'page'       => $page,
-            'totalPages' => $totalPages,
-            'search'     => $search,
+            'pageTitle'     => 'Mis Contactos',
+            'contacts'      => $contacts,
+            'page'          => $page,
+            'totalPages'    => $totalPages,
+            'totalContacts' => $totalContacts,
+            'limit'         => $limit,
+            'offset'        => $offset,
+            'search'        => $search,
+            'sort'          => $sort,
         ]);
     }
 }

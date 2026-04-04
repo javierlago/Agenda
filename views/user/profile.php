@@ -36,18 +36,42 @@
                     <h4 class="mb-3">Actualizar datos</h4>
                     <form action="index.php?action=profile" method="POST">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                        <input type="hidden" name="form_type" value="profile">
                         <div class="mb-3">
                             <label class="form-label">Nuevo Nombre</label>
-                            <input type="text" name="username" class="form-control" 
+                            <input type="text" name="username" class="form-control"
                                    value="<?= htmlspecialchars($user['username']) ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nuevo Email</label>
-                            <input type="email" name="email" class="form-control" 
+                            <input type="email" name="email" class="form-control"
                                    value="<?= htmlspecialchars($user['email']) ?>">
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-outline-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h4 class="mb-3">Cambiar contraseña</h4>
+                    <form action="index.php?action=profile" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                        <input type="hidden" name="form_type" value="password">
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña actual</label>
+                            <input type="password" name="current_password" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nueva contraseña</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar nueva contraseña</label>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-secondary">Cambiar Contraseña</button>
                         </div>
                     </form>
 

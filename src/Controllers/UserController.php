@@ -82,6 +82,23 @@ class UserController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Csrf::validateToken($_POST['csrf_token'] ?? '')) {
                 $errors[] = "Token de seguridad inválido. Intenta de nuevo.";
+            } elseif (($_POST['form_type'] ?? '') === 'password') {
+                $currentPassword = $_POST['current_password'] ?? '';
+                $newPassword     = $_POST['new_password'] ?? '';
+                $confirmPassword = $_POST['confirm_password'] ?? '';
+
+                if (strlen($newPassword) < 6) {
+                    $errors[] = "La nueva contraseña debe tener al menos 6 caracteres.";
+                } elseif ($newPassword !== $confirmPassword) {
+                    $errors[] = "Las contraseñas nuevas no coinciden.";
+                } else {
+                    try {
+                        $this->userModel->changePassword($userId, $currentPassword, $newPassword);
+                        $success = "Contraseña actualizada correctamente.";
+                    } catch (\Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                }
             } elseif ($this->userModel->update($userId, $_POST)) {
                 $success = "Perfil actualizado correctamente.";
                 $user = $this->userModel->getById($userId);

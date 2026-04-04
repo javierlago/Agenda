@@ -73,6 +73,21 @@ class User
         return $stmt->fetch(PDO::FETCH_ASSOC);
         // Esto es un comentario
     }
+    public function changePassword(int $id, string $currentPassword, string $newPassword): bool
+    {
+        $stmt = $this->db->prepare("SELECT password FROM users WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row || !password_verify($currentPassword, $row['password'])) {
+            throw new \Exception("La contraseña actual es incorrecta.");
+        }
+
+        $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("UPDATE users SET password = :password WHERE id = :id");
+        return $stmt->execute([':password' => $hash, ':id' => $id]);
+    }
+
     public function update(int $id, array $data): bool
     {
         $fields = [];
