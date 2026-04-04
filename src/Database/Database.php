@@ -6,48 +6,55 @@ use PDO;
 use PDOException;
 
 /**
- * 
- * Database class for managing database connections and operations.º
+ * Manages the PDO database connection using the Singleton pattern.
+ * Ensures a single shared connection instance throughout the application lifecycle.
  */
 class Database
 {
+    private static ?self $instance = null;
+    private PDO $connection;
 
-    private static $instance = null;
-    private $connection;
-
+    /**
+     * Private constructor to prevent direct instantiation.
+     * Reads credentials from environment variables and creates the PDO connection.
+     *
+     * @throws PDOException If the connection cannot be established.
+     */
     private function __construct()
     {
-        // Load database configuration from environment variables
-        $host = $_ENV['DB_HOST'] ?? 'localhost';
-        $db   = $_ENV['DB_NAME'] ?? '';
-        $user = $_ENV['DB_USER'] ?? '';
-        $pass = $_ENV['DB_PASS'] ?? '';
+        $host    = $_ENV['DB_HOST']    ?? 'localhost';
+        $db      = $_ENV['DB_NAME']    ?? '';
+        $user    = $_ENV['DB_USER']    ?? '';
+        $pass    = $_ENV['DB_PASS']    ?? '';
         $charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 
-        $dns = "mysql:host=$host;dbname=$db;charset=$charset";
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
-        // Set PDO options
         $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Enable exceptions for errors
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Set default fetch mode to associative array
-            PDO::ATTR_EMULATE_PREPARES => false, // Disable emulation of prepared statements for better security
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
         ];
+
         try {
-            // Create a new PDO instance
-            $this->connection = new PDO($dns, $user, $pass, $options);
+            $this->connection = new PDO($dsn, $user, $pass, $options);
         } catch (PDOException $e) {
-            // Handle connection errors
-            throw new PDOException($e->getMessage(), (int)$e->getCode());
+            throw new PDOException($e->getMessage(), (int) $e->getCode());
         }
     }
-    // Method to get the PDO connection instance
-    public static function getConnection() {
+
+    /**
+     * Returns the shared PDO connection instance, creating it if necessary.
+     *
+     * @return PDO The active database connection.
+     */
+    public static function getConnection(): PDO
+    {
         if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance->connection;
     }
 
-    // Prevent cloning of the singleton instance
     private function __clone() {}
 }

@@ -5,10 +5,15 @@ namespace App\Utils;
 use App\Database\Database;
 use PDO;
 
+/**
+ * Enforces brute-force protection on login by tracking failed attempts per IP and email.
+ * An account is locked when either the IP or the email exceeds MAX_ATTEMPTS failures
+ * within a DECAY_MINUTES sliding window. Attempts are stored in the login_attempts table.
+ */
 class RateLimiter
 {
-    private const MAX_ATTEMPTS    = 5;
-    private const DECAY_MINUTES   = 15;
+    private const MAX_ATTEMPTS  = 5;
+    private const DECAY_MINUTES = 15;
 
     private PDO $db;
 
@@ -18,7 +23,12 @@ class RateLimiter
     }
 
     /**
-     * Comprueba si la IP o el email han superado el límite de intentos.
+     * Checks whether the given IP or email has exceeded the failed attempt limit
+     * within the current time window.
+     *
+     * @param string $ip    The client's IP address.
+     * @param string $email The email address used in the login attempt.
+     * @return bool True if the limit has been reached and the request should be blocked.
      */
     public function tooManyAttempts(string $ip, string $email): bool
     {
@@ -35,7 +45,11 @@ class RateLimiter
     }
 
     /**
-     * Registra un intento fallido.
+     * Records a single failed login attempt for the given IP and email.
+     *
+     * @param string $ip    The client's IP address.
+     * @param string $email The email address used in the login attempt.
+     * @return void
      */
     public function recordAttempt(string $ip, string $email): void
     {
@@ -46,7 +60,11 @@ class RateLimiter
     }
 
     /**
-     * Borra los intentos al hacer login correcto.
+     * Removes all recorded attempts for the given IP and email upon a successful login.
+     *
+     * @param string $ip    The client's IP address.
+     * @param string $email The email address used in the login attempt.
+     * @return void
      */
     public function clearAttempts(string $ip, string $email): void
     {
@@ -57,7 +75,12 @@ class RateLimiter
     }
 
     /**
-     * Minutos que quedan hasta que se levanta el bloqueo.
+     * Calculates how many minutes remain until the lockout window expires.
+     * Based on the oldest attempt within the current window.
+     *
+     * @param string $ip    The client's IP address.
+     * @param string $email The email address used in the login attempt.
+     * @return int Minutes remaining until the account is unlocked (0 if already unlocked).
      */
     public function minutesUntilUnlocked(string $ip, string $email): int
     {

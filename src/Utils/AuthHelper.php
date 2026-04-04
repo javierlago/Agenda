@@ -3,19 +3,19 @@
 namespace App\Utils;
 
 /**
- * Class AuthHelper
  * Provides utility methods for authentication and session management.
  */
 class AuthHelper
 {
     /**
-     * Verifies if a user is logged in. 
-     * If not, redirects to the login page and stops execution.
-     * * @return void
+     * Verifies that a user is currently logged in.
+     * Starts the session if not already active, then redirects to the login
+     * page and halts execution if no valid session is found.
+     *
+     * @return void
      */
     public static function verifyLogin(): void
     {
-        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

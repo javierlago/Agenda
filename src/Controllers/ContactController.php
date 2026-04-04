@@ -2,18 +2,18 @@
 
 namespace App\Controllers;
 
-
 use App\Models\Contact;
 use App\Utils\AuthHelper;
 use App\Utils\Csrf;
 use App\Utils\View;
+
 /**
- * Class ContactController
- * Handles the business logic for managing the contacts of the users.
+ * Handles all contact management actions: listing, creation, editing, and deletion.
+ * All methods require an authenticated session; authentication is enforced either
+ * via the route map or by an explicit AuthHelper::verifyLogin() call.
  */
 class ContactController
 {
-    /** @var Contact $contactModel Instance of the Contact Model */
     private Contact $contactModel;
 
     public function __construct()
@@ -21,30 +21,53 @@ class ContactController
         $this->contactModel = new Contact();
     }
 
-
-
     /**
-     * Handles the creation of a new contact.
-     * @param array $data Input data from the form.
-     * @return array Status and potential errors.
+     * Displays a paginated, searchable, and sortable list of the logged-in user's contacts.
+     *
+     * Reads 'search', 'sort', and 'page' from the query string. The sort parameter is
+     * validated against a whitelist before being passed to the model. Passes pagination
+     * metadata and the total contact count to the view for display.
+     *
+     * @return void
      */
-    public function store(array $data): array
+    public function index(): void
     {
-        if (empty(trim($data['name'] ?? ''))) {
-            return ['success' => false, 'errors' => ['The name is required.']];
-        }
+        AuthHelper::verifyLogin();
+        $userId = $_SESSION['user_id'];
 
-        $data['user_id'] = $_SESSION['user_id'];
-        $success = $this->contactModel->create($data);
+        $search = trim($_GET['search'] ?? '');
 
-        return $success
-            ? ['success' => true]
-            : ['success' => false, 'errors' => ['Error saving the contact.']];
+        $allowedSorts = ['name_asc', 'name_desc', 'date_asc', 'date_desc'];
+        $sort = in_array($_GET['sort'] ?? '', $allowedSorts) ? $_GET['sort'] : 'name_asc';
+
+        $limit = 6;
+        $page  = max(1, (int) ($_GET['page'] ?? 1));
+        $offset = ($page - 1) * $limit;
+
+        $contacts      = $this->contactModel->getPaginated($userId, $limit, $offset, $search, $sort);
+        $totalContacts = $this->contactModel->getTotalCount($userId, $search);
+        $totalPages    = (int) ceil($totalContacts / $limit);
+
+        View::render('contacts/index', [
+            'pageTitle'     => 'Mis Contactos',
+            'contacts'      => $contacts,
+            'page'          => $page,
+            'totalPages'    => $totalPages,
+            'totalContacts' => $totalContacts,
+            'limit'         => $limit,
+            'offset'        => $offset,
+            'search'        => $search,
+            'sort'          => $sort,
+        ]);
     }
+
     /**
-     * Method to handle the display of the contact creation form.
-     * 
-     * 
+     * Displays the new contact form (GET) and saves the contact on submission (POST).
+     *
+     * Validates the CSRF token and requires at least the contact's name to be present.
+     * On success, redirects to the home page with a success flash message.
+     *
+     * @return void
      */
     public function create(): void
     {
@@ -67,77 +90,24 @@ class ContactController
         }
 
         View::render('contacts/create', [
-            'pageTitle'  => 'Nuevo Contacto - Agenda Pro',
-            'error'      => $error,
-            'csrfToken'  => Csrf::generateToken(),
+            'pageTitle' => 'Nuevo Contacto - Agenda Pro',
+            'error'     => $error,
+            'csrfToken' => Csrf::generateToken(),
         ]);
     }
-    /**
-     * Fetches a single contact for editing.
-     * @param int $id Contact ID.
-     * @return array|null
-     */
-    public function show(int $id): ?array
-    {
-        return $this->contactModel->findById($id, (int)$_SESSION['user_id']);
-    }
 
     /**
-     * Handles the update of an existing contact.
-     * @param int $id Contact ID.
-     * @param array $data New data.
-     * @return array
+     * Displays the edit form for an existing contact (GET) and saves changes (POST).
+     *
+     * Reads the contact ID from the query string and verifies ownership before rendering.
+     * Validates the CSRF token on POST. On success, redirects to the home page.
+     * Redirects to home with an error flag if the contact is not found or not owned
+     * by the current user.
+     *
+     * @return void
      */
-    public function update(int $id, array $data): array
-    {
-        $data['user_id'] = $_SESSION['user_id'];
-        $success = $this->contactModel->update($id, $data);
-
-        return $success
-            ? ['success' => true]
-            : ['success' => false, 'errors' => ['Error updating the contact.']];
-    }
-
-    /**
-     * Handles the deletion of a contact.
-     * No recibe par�metros por firma para ser compatible con el Router.
-     */
-    public function destroy(): void
-    {
-        // 1. Extraemos el ID de la URL
-        $id = $_GET['id'] ?? null;
-
-        if (!$id) {
-            header("Location: index.php?action=home");
-            exit;
-        }
-
-        // 2. Verificamos que el contacto existe y pertenece al usuario (Seguridad)
-        // Usamos el m�todo show que ya tienes
-        $contact = $this->show((int)$id);
-
-        if (!$contact) {
-            header("Location: index.php?action=home&error=notfound");
-            exit;
-        }
-
-        // 3. Ejecutamos el borrado en el modelo
-        // Importante: No retornamos nada, ejecutamos y redirigimos
-        $result = $this->contactModel->delete((int)$id, (int)$_SESSION['user_id']);
-
-        if ($result) {
-            // �XITO: Volvemos al home con aviso de borrado
-            header("Location: index.php?action=home&success=deleted");
-        } else {
-            // ERROR: Volvemos al home avisando que algo fall�
-            header("Location: index.php?action=home&error=deletefailed");
-        }
-
-        exit;
-    }
     public function edit(): void
     {
-
         $id = $_GET['id'] ?? null;
 
         if (!$id) {
@@ -145,7 +115,7 @@ class ContactController
             exit;
         }
 
-        $contact = $this->show((int)$id);
+        $contact = $this->contactModel->findById((int) $id, (int) $_SESSION['user_id']);
 
         if (!$contact) {
             header("Location: index.php?action=home&error=notfound");
@@ -161,7 +131,7 @@ class ContactController
                 $data = $_POST;
                 $data['user_id'] = $_SESSION['user_id'];
 
-                if ($this->update((int)$id, $data)['success']) {
+                if ($this->contactModel->update((int) $id, $data)) {
                     header("Location: index.php?action=home&success=updated");
                     exit;
                 } else {
@@ -171,45 +141,43 @@ class ContactController
         }
 
         View::render('contacts/edit', [
-            'pageTitle'  => 'Edición de contacto - Agenda Pro',
-            'contact'    => $contact,
-            'error'      => $error,
-            'csrfToken'  => Csrf::generateToken(),
+            'pageTitle' => 'Edición de contacto - Agenda Pro',
+            'contact'   => $contact,
+            'error'     => $error,
+            'csrfToken' => Csrf::generateToken(),
         ]);
     }
+
     /**
-     * Displays the list of contacts for the logged-in user with pagination.
-     * 
+     * Deletes a contact owned by the logged-in user.
+     *
+     * Reads the contact ID from the query string. Verifies ownership before deleting.
+     * Redirects to the home page with an appropriate success or error flash message.
+     *
+     * @return void
      */
-    public function index(): void
+    public function destroy(): void
     {
-        AuthHelper::verifyLogin();
-        $userId = $_SESSION['user_id'];
+        $id = $_GET['id'] ?? null;
 
-        $search = trim($_GET['search'] ?? '');
+        if (!$id) {
+            header("Location: index.php?action=home");
+            exit;
+        }
 
-        $allowedSorts = ['name_asc', 'name_desc', 'date_asc', 'date_desc'];
-        $sort = in_array($_GET['sort'] ?? '', $allowedSorts) ? $_GET['sort'] : 'name_asc';
+        $contact = $this->contactModel->findById((int) $id, (int) $_SESSION['user_id']);
 
-        $limit = 6;
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        if ($page < 1) $page = 1;
-        $offset = ($page - 1) * $limit;
+        if (!$contact) {
+            header("Location: index.php?action=home&error=notfound");
+            exit;
+        }
 
-        $contacts      = $this->contactModel->getPaginated($userId, $limit, $offset, $search, $sort);
-        $totalContacts = $this->contactModel->getTotalCount($userId, $search);
-        $totalPages    = (int) ceil($totalContacts / $limit);
+        $result = $this->contactModel->delete((int) $id, (int) $_SESSION['user_id']);
 
-        View::render('contacts/index', [
-            'pageTitle'     => 'Mis Contactos',
-            'contacts'      => $contacts,
-            'page'          => $page,
-            'totalPages'    => $totalPages,
-            'totalContacts' => $totalContacts,
-            'limit'         => $limit,
-            'offset'        => $offset,
-            'search'        => $search,
-            'sort'          => $sort,
-        ]);
+        header($result
+            ? "Location: index.php?action=home&success=deleted"
+            : "Location: index.php?action=home&error=deletefailed"
+        );
+        exit;
     }
 }

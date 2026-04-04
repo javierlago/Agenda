@@ -2,36 +2,36 @@
 
 namespace App\Utils;
 
+/**
+ * Simple file-based logger for debugging and error tracking.
+ * Writes timestamped entries to separate log files under /Logs/.
+ */
 class Logger
 {
     private static string $logPath = __DIR__ . '/../../Logs/';
 
     /**
-     * Escribe un mensaje en un archivo de log específico.
-     * * @param string $filename Nombre del archivo (ej: 'db_errors', 'auth')
-     * @param mixed $data El mensaje o array de datos a guardar
+     * Appends a timestamped entry to the specified log file.
+     * Arrays and objects are serialised as pretty-printed JSON.
+     *
+     * @param string       $filename Log file name without extension (e.g. 'auth', 'db_errors').
+     * @param mixed        $data     Message string, array, or object to log.
+     * @return void
      */
     public static function log(string $filename, $data): void
     {
-        // 1. Asegurarnos de que la carpeta existe
         if (!is_dir(self::$logPath)) {
             mkdir(self::$logPath, 0777, true);
         }
 
-        // 2. Formatear el mensaje
         $date = date('Y-m-d H:i:s');
-        
-        // Si nos pasan un array u objeto, lo convertimos a JSON para que sea legible
-        if (is_array($data) || is_object($data)) {
-            $message = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        } else {
-            $message = $data;
-        }
+
+        $message = (is_array($data) || is_object($data))
+            ? json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            : $data;
 
         $logEntry = "[$date] " . $message . PHP_EOL . str_repeat("-", 30) . PHP_EOL;
 
-        // 3. Escribir en el archivo (se crea si no existe)
-        $filePath = self::$logPath . $filename . '.log';
-        file_put_contents($filePath, $logEntry, FILE_APPEND);
+        file_put_contents(self::$logPath . $filename . '.log', $logEntry, FILE_APPEND);
     }
 }

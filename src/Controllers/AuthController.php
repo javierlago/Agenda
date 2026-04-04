@@ -9,19 +9,29 @@ use App\Utils\RateLimiter;
 use App\Utils\View;
 use PDO;
 
+/**
+ * Handles user authentication: login and logout.
+ */
 class AuthController
 {
-    private $userModel;
+    private User $userModel;
     private PDO $db;
+
     public function __construct()
     {
         $this->userModel = new User();
         $this->db = Database::getConnection();
     }
+
     /**
-     * 
-     * 
-     * Method to handle the display of the login form and process login submissions.
+     * Displays the login form (GET) and processes login submissions (POST).
+     *
+     * On POST, validates the CSRF token, checks rate limiting by IP and email,
+     * then verifies credentials. On success, stores user data in the session
+     * and redirects to the home page. On failure, re-renders the form with the
+     * submitted email pre-filled and an error message.
+     *
+     * @return void
      */
     public function login(): void
     {
@@ -58,8 +68,18 @@ class AuthController
             }
         }
 
-        View::render('auth/login', ['error' => $error, 'email' => $email, 'csrfToken' => Csrf::generateToken()]);
+        View::render('auth/login', [
+            'error'     => $error,
+            'email'     => $email,
+            'csrfToken' => Csrf::generateToken(),
+        ]);
     }
+
+    /**
+     * Destroys the current session and redirects to the login page.
+     *
+     * @return void
+     */
     public function logout(): void
     {
         session_destroy();

@@ -7,12 +7,11 @@ use PDO;
 use PDOException;
 
 /**
- * Class Contact
- * Handles Database operations (CRUD) for the contacts table.
+ * Handles all database operations for the contacts table.
+ * All queries are scoped to a specific user_id to enforce data isolation.
  */
 class Contact
 {
-    /** @var PDO $db Database connection instance */
     private PDO $db;
 
     public function __construct()
@@ -21,14 +20,14 @@ class Contact
     }
 
     /**
-     * Creates a new contact in the database.
+     * Inserts a new contact record for the given user.
      *
-     * @param array $data Associative array with contact details.
+     * @param array $data Must contain 'user_id' and 'name'. 'phone', 'email', and 'description' are optional.
      * @return bool True on success, false on failure.
      */
     public function create(array $data): bool
     {
-        $sql = "INSERT INTO contacts (user_id, name, phone, email, description) 
+        $sql = "INSERT INTO contacts (user_id, name, phone, email, description)
                 VALUES (:user_id, :name, :phone, :email, :description)";
         try {
             $stmt = $this->db->prepare($sql);
@@ -37,25 +36,35 @@ class Contact
                 ':name'        => $data['name'],
                 ':phone'       => $data['phone'] ?? null,
                 ':email'       => $data['email'] ?? null,
-                ':description' => $data['description'] ?? null
+                ':description' => $data['description'] ?? null,
             ]);
         } catch (PDOException $e) {
             error_log("Error creating contact: " . $e->getMessage());
             return false;
         }
     }
+
+    /**
+     * Retrieves a single contact by ID, restricted to the given user.
+     * Returns null if the contact does not exist or belongs to a different user.
+     *
+     * @param int $id     The contact's primary key.
+     * @param int $userId The ID of the logged-in user (ownership check).
+     * @return array|null The contact row, or null if not found.
+     */
     public function findById(int $id, int $userId): ?array
     {
-        $sql = "SELECT * FROM contacts WHERE id = :id AND user_id = :user_id";
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare("SELECT * FROM contacts WHERE id = :id AND user_id = :user_id");
         $stmt->execute([':id' => $id, ':user_id' => $userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
+
     /**
-     * Updates an existing contact record.
+     * Updates all fields of an existing contact.
+     * The user_id check ensures a user cannot edit another user's contacts.
      *
-     * @param int $id The contact ID.
-     * @param array $data New contact details.
+     * @param int   $id   The contact's primary key.
+     * @param array $data New values. Must contain 'user_id', 'name'. 'phone', 'email', 'description' are optional.
      * @return bool True on success, false on failure.
      */
     public function update(int $id, array $data): bool
@@ -70,7 +79,7 @@ class Contact
                 ':name'        => $data['name'],
                 ':phone'       => $data['phone'] ?? null,
                 ':email'       => $data['email'] ?? null,
-                ':description' => $data['description'] ?? null
+                ':description' => $data['description'] ?? null,
             ]);
         } catch (PDOException $e) {
             error_log("Error updating contact: " . $e->getMessage());
@@ -79,39 +88,28 @@ class Contact
     }
 
     /**
-     * Retrieves all contacts belonging to a specific user.
+     * Deletes a contact record, restricted to the given user for security.
      *
-     * @param int $userId The ID of the logged-in user.
-     * @return array List of contacts.
-     */
-    public function getAllByUserId(int $userId): array
-    {
-        $sql = "SELECT * FROM contacts WHERE user_id = :user_id ORDER BY name ASC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':user_id' => $userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    }
-
-    /**
-     * Deletes a contact record.
-     *
-     * @param int $id The contact ID.
-     * @param int $userId Owner ID for security.
-     * @return bool
+     * @param int $id     The contact's primary key.
+     * @param int $userId The ID of the logged-in user (ownership check).
+     * @return bool True if a row was deleted, false otherwise.
      */
     public function delete(int $id, int $userId): bool
     {
-        $sql = "DELETE FROM contacts WHERE id = :id AND user_id = :user_id";
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare("DELETE FROM contacts WHERE id = :id AND user_id = :user_id");
         return $stmt->execute([':id' => $id, ':user_id' => $userId]);
     }
-    /**
-     *  Pagination method to retrieve a subset of contacts for a user.
-     * @param int $userId The ID of the logged-in user.
-     * @param int $limit Number of contacts per page.
-     * @param int $offset Number of contacts to skip (for pagination).
-     */
 
+    /**
+     * Returns a paginated, optionally filtered and sorted list of contacts for a user.
+     *
+     * @param int    $userId The ID of the logged-in user.
+     * @param int    $limit  Number of records per page.
+     * @param int    $offset Number of records to skip (calculated as ($page - 1) * $limit).
+     * @param string $search Optional search term matched against name, phone, and email.
+     * @param string $sort   Sort key: 'name_asc' (default), 'name_desc', 'date_asc', 'date_desc'.
+     * @return array List of contact rows as associative arrays.
+     */
     public function getPaginated(int $userId, int $limit, int $offset, string $search = '', string $sort = 'name_asc'): array
     {
         $orderBy = match($sort) {
@@ -130,12 +128,12 @@ class Contact
                 LIMIT ? OFFSET ?
             ");
             $term = '%' . $search . '%';
-            $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
             $stmt->bindValue(2, $term);
             $stmt->bindValue(3, $term);
             $stmt->bindValue(4, $term);
-            $stmt->bindValue(5, $limit, \PDO::PARAM_INT);
-            $stmt->bindValue(6, $offset, \PDO::PARAM_INT);
+            $stmt->bindValue(5, $limit, PDO::PARAM_INT);
+            $stmt->bindValue(6, $offset, PDO::PARAM_INT);
         } else {
             $stmt = $this->db->prepare("
                 SELECT * FROM contacts
@@ -143,18 +141,22 @@ class Contact
                 ORDER BY {$orderBy}
                 LIMIT ? OFFSET ?
             ");
-            $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
-            $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
-            $stmt->bindValue(3, $offset, \PDO::PARAM_INT);
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+            $stmt->bindValue(2, $limit, PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
         }
 
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
     /**
-     * Obtiene el total de contactos para un usuario específico (útil para paginación).
-     * @param int $userId
-     * @return int
+     * Returns the total number of contacts for a user, respecting the active search filter.
+     * Used to calculate the total number of pages for pagination.
+     *
+     * @param int    $userId The ID of the logged-in user.
+     * @param string $search Optional search term applied to name, phone, and email.
+     * @return int Total matching contact count.
      */
     public function getTotalCount(int $userId, string $search = ''): int
     {
