@@ -1,96 +1,172 @@
-# Agenda Pro — PHP Contact Manager
+<div align="center">
 
-A full-featured contact management web application built with PHP 8.1+ following a clean MVC architecture. Developed as a PHP practice project covering authentication, CRUD operations, security hardening, and pagination.
+# 📔 Agenda Pro
+
+### Keep your contacts organised — built from scratch with PHP
+
+*A full-featured contact manager built without frameworks to understand how the web really works.*
+
+<br>
+
+![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Composer](https://img.shields.io/badge/Composer-885630?style=for-the-badge&logo=composer&logoColor=white)
+![MVC](https://img.shields.io/badge/Pattern-MVC-green?style=for-the-badge)
+
+</div>
 
 ---
 
-## Features
+## 🖼️ Screenshots
 
-- **User accounts** — registration, login, logout, profile editing, and password change.
-- **Contact management** — create, read, update, and delete personal contacts (name, phone, email, notes).
-- **Pagination** — contacts displayed 6 per page with a page navigator and a "Showing X–Y of Z contacts" counter.
-- **Search** — live filtering by name, phone, or email across all contacts.
-- **Sorting** — four options: Name A–Z, Name Z–A, Newest first, Oldest first.
-- **Flash messages** — auto-dismissing alerts for create, update, delete, and error events.
+<table>
+  <tr>
+    <td align="center"><b>🔐 Login</b></td>
+    <td align="center"><b>📋 Contact List</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/login.png" alt="Login page"/></td>
+    <td><img src="docs/screenshots/contacts.png" alt="Contact list"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>➕ New Contact</b></td>
+    <td align="center"><b>👤 Profile</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/create.png" alt="Create contact"/></td>
+    <td><img src="docs/screenshots/profile.png" alt="User profile"/></td>
+  </tr>
+</table>
 
 ---
 
-## Security
+## ✨ What can it do?
 
-| Mechanism | Details |
+| | Feature | Description |
+|---|---|---|
+| 🔑 | **Authentication** | Register, log in, log out and change your password securely |
+| 👥 | **Contact CRUD** | Create, view, edit and delete contacts with name, phone, email and notes |
+| 🔍 | **Search** | Filter contacts instantly by name, phone or email |
+| 🔃 | **Sorting** | Name A–Z / Z–A, Newest first, Oldest first |
+| 📄 | **Pagination** | 6 contacts per page with a *"Showing X–Y of Z contacts"* counter |
+| 💬 | **Flash messages** | Auto-dismissing alerts for every create, update and delete action |
+
+---
+
+## 🔒 Security
+
+This project goes beyond a basic tutorial — every common attack vector is addressed:
+
+- 🛡️ **CSRF protection** — every form has a signed session token validated with `hash_equals()` to prevent timing attacks
+- 🚦 **Rate limiting** — 5 failed login attempts per IP/email within 15 minutes triggers a lockout
+- 🔐 **Bcrypt hashing** — passwords are never stored in plain text
+- 💉 **SQL injection prevention** — PDO prepared statements on every single query
+- 👁️ **Ownership checks** — every contact query includes `AND user_id = ?` so users can only access their own data
+- 📁 **Public directory pattern** — only `public/` is exposed to the web; source code and config live outside the document root
+- 🌍 **Environment variables** — credentials stored in `.env` via `vlucas/phpdotenv`, never committed to version control
+
+---
+
+## 🏗️ Architecture
+
+Built on a **custom MVC pattern** — no framework, everything hand-rolled to understand what happens under the hood.
+
+```
+Request → public/index.php → routes.php → Controller → Model → View
+```
+
+| Layer | Role |
 |---|---|
-| **CSRF protection** | Every form (login, register, create contact, edit contact, profile) embeds a signed session token. Validated server-side with `hash_equals()` to prevent timing attacks. |
-| **Brute-force protection** | Login is rate-limited per IP and email: 5 failures within 15 minutes triggers a lockout. Attempts are stored in MySQL and cleared on successful login. |
-| **Password hashing** | Passwords are stored as bcrypt hashes via `password_hash()` / `password_verify()`. |
-| **SQL injection prevention** | All queries use PDO prepared statements with named or positional placeholders. |
-| **Ownership checks** | Every contact query includes `AND user_id = ?` so users can only read or modify their own data. |
-| **Public directory pattern** | Only `public/` is the web root. Application source, configuration, and the database schema are outside the document root. |
-| **Environment variables** | Database credentials are stored in a `.env` file (never committed) and loaded via `vlucas/phpdotenv`. |
+| **Entry point** | Reads `?action=`, resolves the route, enforces auth if required, dispatches to the controller |
+| **Controllers** | Validate input, call model methods, pass data to the view |
+| **Models** | All SQL lives here — one responsibility per method |
+| **Views** | Plain PHP templates — they only print variables, zero business logic |
+| **Utils** | Stateless helpers: `Csrf`, `RateLimiter`, `AuthHelper`, `View`, `Logger` |
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | PHP 8.1+ |
-| Database | MySQL / MariaDB |
-| Frontend | Bootstrap 5.3 (CDN) |
-| Dependency management | Composer |
-| Environment config | vlucas/phpdotenv |
-| Version control | Git |
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 Agenda/
-├── database/
-│   ├── schema.sql          # Table definitions (users, contacts, login_attempts)
-│   └── datainjector.sql    # Optional seed data
-├── public/
-│   └── index.php           # Web entry point — boots the app and dispatches routes
-├── src/
+├── 📂 database/
+│   ├── schema.sql              # Table definitions
+│   └── datainjector.sql        # Optional seed data
+├── 📂 docs/screenshots/        # README images
+├── 📂 public/
+│   └── index.php               # Web entry point
+├── 📂 src/
 │   ├── Controllers/
-│   │   ├── AuthController.php      # Login and logout
-│   │   ├── ContactController.php   # Contact CRUD and listing
-│   │   └── UserController.php      # Registration and profile
+│   │   ├── AuthController.php      # Login · Logout
+│   │   ├── ContactController.php   # Contact CRUD + listing
+│   │   └── UserController.php      # Registration · Profile
 │   ├── Database/
 │   │   └── Database.php            # PDO Singleton
 │   ├── Models/
-│   │   ├── Contact.php             # Contact DB operations
-│   │   └── User.php                # User DB operations
+│   │   ├── Contact.php
+│   │   └── User.php
 │   ├── Utils/
 │   │   ├── AuthHelper.php          # Session guard
-│   │   ├── Csrf.php                # Token generation and validation
+│   │   ├── Csrf.php                # Token generation & validation
 │   │   ├── Logger.php              # File-based debug logger
-│   │   ├── RateLimiter.php         # Login brute-force protection
+│   │   ├── RateLimiter.php         # Brute-force protection
 │   │   └── View.php                # Template renderer
-│   └── routes.php                  # Route map: action → [Controller, method, requiresAuth]
-├── vendor/                         # Composer dependencies (not committed)
-├── views/
-│   ├── auth/
-│   │   ├── login.php
-│   │   └── register.php
-│   ├── contacts/
-│   │   ├── create.php
-│   │   ├── edit.php
-│   │   └── index.php
-│   ├── layout/
-│   │   ├── header.php              # Navbar, Bootstrap CDN, flash messages
-│   │   └── footer.php              # Bootstrap JS CDN
-│   └── user/
-│       └── profile.php
-├── .env                            # Local credentials (not committed)
-├── .gitignore
-├── composer.json
-└── README.md
+│   └── routes.php
+├── 📂 views/
+│   ├── auth/                   # login · register
+│   ├── contacts/               # index · create · edit
+│   ├── layout/                 # header · footer
+│   └── user/                   # profile
+└── 📂 vendor/                  # Composer dependencies
 ```
 
 ---
 
-## Database Schema
+## 🚀 Getting Started
+
+> **Requirements:** PHP 8.1+, MySQL, Composer
+
+**① Clone the repo**
+```bash
+git clone https://github.com/tu-usuario/Agenda.git
+cd Agenda
+```
+
+**② Install dependencies**
+```bash
+composer install
+```
+
+**③ Import the database**
+```bash
+mysql -u root -p < database/schema.sql
+```
+
+**④ Set up your environment**
+
+Create a `.env` file in the project root:
+```ini
+DB_HOST=localhost
+DB_NAME=agenda_app
+DB_USER=root
+DB_PASS=your_password
+DB_CHARSET=utf8mb4
+```
+
+**⑤ Start the server**
+```bash
+php -S localhost:8000 -t public
+```
+
+Open **http://localhost:8000** and you're good to go. 🎉
+
+---
+
+## 🗄️ Database Schema
+
+<details>
+<summary>Click to expand</summary>
 
 ### `users`
 | Column | Type | Notes |
@@ -99,7 +175,7 @@ Agenda/
 | username | VARCHAR(50) UNIQUE | Display name |
 | email | VARCHAR(100) UNIQUE | Used for login |
 | password | VARCHAR(255) | bcrypt hash |
-| created_at | TIMESTAMP | Set automatically |
+| created_at | TIMESTAMP | Auto-set |
 
 ### `contacts`
 | Column | Type | Notes |
@@ -110,7 +186,7 @@ Agenda/
 | phone | VARCHAR(20) | Optional |
 | email | VARCHAR(100) | Optional |
 | description | TEXT | Optional notes |
-| created_at | TIMESTAMP | Set automatically |
+| created_at | TIMESTAMP | Auto-set |
 
 ### `login_attempts`
 | Column | Type | Notes |
@@ -120,63 +196,11 @@ Agenda/
 | email | VARCHAR(100) | |
 | attempted_at | TIMESTAMP | Indexed for fast range queries |
 
----
-
-## Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/tu-usuario/Agenda.git
-cd Agenda
-```
-
-### 2. Install dependencies
-
-```bash
-composer install
-```
-
-### 3. Configure the database
-
-Create the database and import the schema:
-
-```bash
-mysql -u root -p < database/schema.sql
-```
-
-### 4. Create the environment file
-
-Create a `.env` file in the project root:
-
-```ini
-DB_HOST=localhost
-DB_NAME=agenda_app
-DB_USER=root
-DB_PASS=your_password
-DB_CHARSET=utf8mb4
-```
-
-### 5. Start the development server
-
-```bash
-php -S localhost:8000 -t public
-```
-
-Open [http://localhost:8000](http://localhost:8000) in your browser.
+</details>
 
 ---
 
-## Architecture Overview
-
-The application follows an **MVC-lite** pattern without a framework:
-
-1. **Entry point** — `public/index.php` reads the `action` query parameter, looks it up in the route map, optionally enforces authentication, instantiates the controller, and calls the method.
-2. **Controllers** — handle the request/response cycle: validate input, call model methods, and pass data to `View::render()`.
-3. **Models** — encapsulate all SQL queries using PDO prepared statements. Each model method has a single responsibility.
-4. **Views** — plain PHP templates. They receive variables via `extract()` inside `View::render()` and have no knowledge of classes or business logic.
-5. **Utils** — stateless helper classes (`Csrf`, `RateLimiter`, `AuthHelper`, `View`, `Logger`) kept separate from the MVC layer.
-
----
-
-*Developed by Javier Lago Amoedo*
+<div align="center">
+  <br>
+  <i>Built with curiosity and a lot of PHP by <b>Javier Lago Amoedo</b></i>
+</div>
