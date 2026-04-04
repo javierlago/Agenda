@@ -42,3 +42,41 @@ if (isset($_SESSION['user_id']) && (!isset($hideNavbar) || $hideNavbar === false
         </div>
     </nav>
 <?php endif; ?>
+
+<?php
+$successMessages = [
+    '1'       => 'Contacto creado correctamente.',
+    'updated' => 'Contacto actualizado correctamente.',
+    'deleted' => 'Contacto eliminado correctamente.',
+];
+$errorMessages = [
+    'notfound'    => 'El contacto no existe o no tienes permiso para accederlo.',
+    'deletefailed' => 'No se pudo eliminar el contacto. Inténtalo de nuevo.',
+];
+
+$alertType = null;
+$alertText = null;
+
+if (isset($_GET['success']) && array_key_exists($_GET['success'], $successMessages)) {
+    $alertType = 'success';
+    $alertText = $successMessages[$_GET['success']];
+} elseif (isset($_GET['error']) && array_key_exists($_GET['error'], $errorMessages)) {
+    $alertType = 'danger';
+    $alertText = $errorMessages[$_GET['error']];
+}
+?>
+
+<?php if ($alertType): ?>
+    <div class="container mt-3">
+        <div class="alert alert-<?= $alertType ?> alert-dismissible fade show" role="alert" id="flashAlert">
+            <?= htmlspecialchars($alertText) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const alert = document.getElementById('flashAlert');
+            if (alert) bootstrap.Alert.getOrCreateInstance(alert).close();
+        }, 4000);
+    </script>
+<?php endif; ?>
