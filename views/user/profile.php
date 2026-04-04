@@ -35,6 +35,7 @@
 
                     <h4 class="mb-3">Actualizar datos</h4>
                     <form action="index.php?action=profile" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                         <div class="mb-3">
                             <label class="form-label">Nuevo Nombre</label>
                             <input type="text" name="username" class="form-control" 

@@ -10,6 +10,7 @@
     <?php endif; ?>
 
     <form action="index.php?action=edit_contact&id=<?= $contact['id'] ?>" method="POST">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
         <div class="mb-3">
             <label for="name" class="form-label">Nombre</label>
             <input type="text" name="name" id="name" class="form-control"

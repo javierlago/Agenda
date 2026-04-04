@@ -15,7 +15,7 @@
                     <?php endif; ?>
 
                     <form action="index.php?action=add_contact" method="POST">
-                        
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Nombre Completo <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" placeholder="Ej: Juan Pérez"

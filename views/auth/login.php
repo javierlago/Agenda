@@ -33,9 +33,11 @@
             </div>
         <?php endif; ?>
         <form action="index.php?action=login" method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
             <div class="mb-3">
                 <label class="form-label small fw-bold">Email</label>
-                <input type="email" name="email" class="form-control" placeholder="usuario@ejemplo.com" required>
+                <input type="email" name="email" class="form-control" placeholder="usuario@ejemplo.com"
+                       value="<?= htmlspecialchars($email ?? '') ?>" required>
             </div>
             <div class="mb-4">
                 <label class="form-label small fw-bold">Contraseña</label>

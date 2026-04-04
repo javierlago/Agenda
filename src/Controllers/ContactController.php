@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Models\Contact;
 use App\Utils\AuthHelper;
+use App\Utils\Csrf;
 use App\Utils\View;
 /**
  * Class ContactController
@@ -50,20 +51,25 @@ class ContactController
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = $_POST;
-            $data['user_id'] = $_SESSION['user_id'];
-
-            if ($this->contactModel->create($data)) {
-                header("Location: index.php?action=home&success=1");
-                exit;
+            if (!Csrf::validateToken($_POST['csrf_token'] ?? '')) {
+                $error = "Token de seguridad inválido. Intenta de nuevo.";
             } else {
-                $error = "No se pudo guardar el contacto.";
+                $data = $_POST;
+                $data['user_id'] = $_SESSION['user_id'];
+
+                if ($this->contactModel->create($data)) {
+                    header("Location: index.php?action=home&success=1");
+                    exit;
+                } else {
+                    $error = "No se pudo guardar el contacto.";
+                }
             }
         }
 
         View::render('contacts/create', [
-            'pageTitle' => 'Nuevo Contacto - Agenda Pro',
-            'error'     => $error,
+            'pageTitle'  => 'Nuevo Contacto - Agenda Pro',
+            'error'      => $error,
+            'csrfToken'  => Csrf::generateToken(),
         ]);
     }
     /**
@@ -149,22 +155,26 @@ class ContactController
         $error = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = $_POST;
-            $data['user_id'] = $_SESSION['user_id'];
-
-            // Llamamos a tu m�todo de actualizaci�n
-            if ($this->update((int)$id, $data)['success']) {
-                header("Location: index.php?action=home&success=updated");
-                exit;
+            if (!Csrf::validateToken($_POST['csrf_token'] ?? '')) {
+                $error = "Token de seguridad inválido. Intenta de nuevo.";
             } else {
-                $error = "No se pudo actualizar el contacto.";
+                $data = $_POST;
+                $data['user_id'] = $_SESSION['user_id'];
+
+                if ($this->update((int)$id, $data)['success']) {
+                    header("Location: index.php?action=home&success=updated");
+                    exit;
+                } else {
+                    $error = "No se pudo actualizar el contacto.";
+                }
             }
         }
 
         View::render('contacts/edit', [
-            'pageTitle' => 'Edición de contacto - Agenda Pro',
-            'contact'   => $contact,
-            'error'     => $error,
+            'pageTitle'  => 'Edición de contacto - Agenda Pro',
+            'contact'    => $contact,
+            'error'      => $error,
+            'csrfToken'  => Csrf::generateToken(),
         ]);
     }
     /**
