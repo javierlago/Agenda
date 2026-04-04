@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\User;
 use App\Utils\AuthHelper;
 use App\Utils\Logger;
+use App\Utils\View;
 
 class UserController
 {
@@ -55,7 +56,10 @@ class UserController
                 }
             }
         }
-        require_once __DIR__ . '/../../views/auth/register.php';
+        View::render('auth/register', [
+            'pageTitle' => 'Crear Cuenta - Agenda Pro',
+            'errors'    => $errors,
+        ]);
     }
 
     /**
@@ -85,11 +89,21 @@ class UserController
             $user = $this->userModel->getById($userId);
             if (!$user) {
                 $errors[] = "Usuario no encontrado.";
-                require_once __DIR__ . '/../../views/user/profile.php';
+                View::render('user/profile', [
+                    'pageTitle' => 'Mi Perfil - Agenda Pro',
+                    'user'    => $user,
+                    'errors'  => $errors,
+                    'success' => $success,
+                ]);
                 return;
             }
         }
 
-        require_once __DIR__ . '/../../views/user/profile.php';
+        View::render('user/profile', [
+            'pageTitle' => 'Mi Perfil - Agenda Pro',
+            'user'    => $user,
+            'errors'  => $errors,
+            'success' => $success,
+        ]);
     }
 }

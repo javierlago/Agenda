@@ -4,7 +4,8 @@ namespace App\Controllers;
 
 
 use App\Models\Contact;
-
+use App\Utils\AuthHelper;
+use App\Utils\View;
 /**
  * Class ContactController
  * Handles the business logic for managing the contacts of the users.
@@ -19,23 +20,7 @@ class ContactController
         $this->contactModel = new Contact();
     }
 
-    /**
-     * 
-     * Displays the list of contacts for the logged-in user.
-     * If there are no contacts, it can show an example contact.
-     */
-    public function index(): void
-    {
-        $contacts = $this->contactModel->getAllByUserId((int)$_SESSION['user_id']);
 
-        // Si no hay contactos, el array de ejemplo lo manejamos aquÌ si queremos
-        if (empty($contacts)) {
-            $contacts = [['name' => 'Ejemplo', 'phone' => '000', 'email' => 'a@b.com', 'is_example' => true]];
-        }
-
-        // El controlador carga la vista
-        require_once __DIR__ . '/../../views/contacts/index.php';
-    }
 
     /**
      * Handles the creation of a new contact.
@@ -76,8 +61,10 @@ class ContactController
             }
         }
 
-        // Cargamos la vista de creaciÛn
-        require_once __DIR__ . '/../../views/contacts/create.php';
+        View::render('contacts/create', [
+            'pageTitle' => 'Nuevo Contacto - Agenda Pro',
+            'error'     => $error,
+        ]);
     }
     /**
      * Fetches a single contact for editing.
@@ -107,7 +94,7 @@ class ContactController
 
     /**
      * Handles the deletion of a contact.
-     * No recibe par·metros por firma para ser compatible con el Router.
+     * No recibe parÔøΩmetros por firma para ser compatible con el Router.
      */
     public function destroy(): void
     {
@@ -120,7 +107,7 @@ class ContactController
         }
 
         // 2. Verificamos que el contacto existe y pertenece al usuario (Seguridad)
-        // Usamos el mÈtodo show que ya tienes
+        // Usamos el mÔøΩtodo show que ya tienes
         $contact = $this->show((int)$id);
 
         if (!$contact) {
@@ -133,10 +120,10 @@ class ContactController
         $result = $this->contactModel->delete((int)$id, (int)$_SESSION['user_id']);
 
         if ($result) {
-            // …XITO: Volvemos al home con aviso de borrado
+            // ÔøΩXITO: Volvemos al home con aviso de borrado
             header("Location: index.php?action=home&success=deleted");
         } else {
-            // ERROR: Volvemos al home avisando que algo fallÛ
+            // ERROR: Volvemos al home avisando que algo fallÔøΩ
             header("Location: index.php?action=home&error=deletefailed");
         }
 
@@ -165,7 +152,7 @@ class ContactController
             $data = $_POST;
             $data['user_id'] = $_SESSION['user_id'];
 
-            // Llamamos a tu mÈtodo de actualizaciÛn
+            // Llamamos a tu mÔøΩtodo de actualizaciÔøΩn
             if ($this->update((int)$id, $data)['success']) {
                 header("Location: index.php?action=home&success=updated");
                 exit;
@@ -174,6 +161,41 @@ class ContactController
             }
         }
 
-        require_once __DIR__ . '/../../views/contacts/edit.php';
+        View::render('contacts/edit', [
+            'pageTitle' => 'Edici√≥n de contacto - Agenda Pro',
+            'contact'   => $contact,
+            'error'     => $error,
+        ]);
+    }
+    /**
+     * Displays the list of contacts for the logged-in user with pagination.
+     * 
+     */
+    public function index(): void
+    {
+        AuthHelper::verifyLogin();
+        $userId = $_SESSION['user_id'];
+
+        // 1. T√©rmino de b√∫squeda (vac√≠o si no se busca nada)
+        $search = trim($_GET['search'] ?? '');
+
+        // 2. Configuraci√≥n de paginaci√≥n
+        $limit = 6;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
+
+        // 3. Obtener datos filtrando por b√∫squeda si existe
+        $contacts = $this->contactModel->getPaginated($userId, $limit, $offset, $search);
+        $totalContacts = $this->contactModel->getTotalCount($userId, $search);
+        $totalPages = ceil($totalContacts / $limit);
+
+        View::render('contacts/index', [
+            'pageTitle'  => 'Mis Contactos',
+            'contacts'   => $contacts,
+            'page'       => $page,
+            'totalPages' => $totalPages,
+            'search'     => $search,
+        ]);
     }
 }

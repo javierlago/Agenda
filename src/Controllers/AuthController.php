@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\User;
 use App\Database\Database;
+use App\Utils\View;
 use PDO;
 
 class AuthController
@@ -46,8 +47,7 @@ class AuthController
             }
         }
 
-        // 3. Cargamos la vista (esta variable $error se usará en el HTML)
-        require_once __DIR__ . '/../../views/auth/login.php';
+        View::render('auth/login', ['error' => $error]);
     }
     public function logout(): void
     {
