@@ -1,4 +1,3 @@
-<?php include __DIR__ . '/../layout/header.php'; ?>
 
 <style>
     .login-wrapper {
@@ -51,4 +50,3 @@
     </div>
 </div>
 
-<?php include __DIR__ . '/../layout/footer.php'; ?>

@@ -1,7 +1,3 @@
-<?php 
-    $pageTitle = "Nuevo Contacto - Agenda Pro";
-    include __DIR__ . '/../layout/header.php'; 
-?>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -22,23 +18,26 @@
                         
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Nombre Completo <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" placeholder="Ej: Juan Pérez" required>
+                            <input type="text" name="name" class="form-control" placeholder="Ej: Juan Pérez"
+                                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small fw-bold">Teléfono</label>
-                                <input type="text" name="phone" class="form-control" placeholder="600 000 000">
+                                <input type="text" name="phone" class="form-control" placeholder="600 000 000"
+                                    value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small fw-bold">Email</label>
-                                <input type="email" name="email" class="form-control" placeholder="correo@ejemplo.com">
+                                <input type="email" name="email" class="form-control" placeholder="correo@ejemplo.com"
+                                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label small fw-bold">Descripción / Notas</label>
-                            <textarea name="description" class="form-control" rows="3" placeholder="Compañero de trabajo, familia, etc..."></textarea>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Compañero de trabajo, familia, etc..."><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -53,4 +52,3 @@
     </div>
 </div>
 
-<?php include __DIR__ . '/../layout/footer.php'; ?>

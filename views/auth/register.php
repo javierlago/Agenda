@@ -1,8 +1,3 @@
-<?php
-$pageTitle = "Crear Cuenta - Agenda Pro";
-$hideNavbar = false; // Aquí sí queremos ver la barra superior
-include __DIR__ . '/../layout/header.php';
-?>
 
 <style>
     .register-wrapper {
@@ -69,4 +64,3 @@ include __DIR__ . '/../layout/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../layout/footer.php'; ?>

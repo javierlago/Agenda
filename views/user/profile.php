@@ -1,7 +1,3 @@
-<?php 
-    $pageTitle = "Mi Perfil - Agenda Pro";
-    include __DIR__ . '/../layout/header.php'; 
-?>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -60,4 +56,3 @@
     </div>
 </div>
 
-<?php include __DIR__ . '/../layout/footer.php'; ?>
