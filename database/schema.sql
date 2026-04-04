@@ -10,6 +10,16 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+/*------------------------ Table Login Attempts -------------------------------------------- */
+CREATE TABLE login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ip (ip),
+    INDEX idx_email (email)
+) ENGINE=InnoDB;
+
 /*------------------------ Table Contacts --------------------------------------------------- */
 CREATE TABLE contacts (
     id INT AUTO_INCREMENT PRIMARY KEY,
